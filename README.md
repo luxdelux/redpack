@@ -51,6 +51,13 @@ Ruby server example:
 Java server example:
 --------------------
 
+    public class EchoService implements Service {
+      public Object execute(Object... params) throws ServiceException {
+    	  System.out.println("in echo");
+        return "echo!";
+      }
+    }
+
     MsgpackRPCServer server = new MsgpackRPCServer("my_queue_name");
     server.registerService("echo", new EchoService());
     server.start();
