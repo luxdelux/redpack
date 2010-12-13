@@ -7,7 +7,7 @@ NodeJS server example:
 ----------------------
 
     s = new rpc.Server('my_queue_name', {
-      increment: function(amount) {
+      echo: function(amount) {
         return "from node server: " + (amount + 10);
       }
     });
@@ -17,7 +17,7 @@ NodeJS client example:
 ----------------------
 
     c = new rpc.Client('my_queue_name');
-    c.invoke('increment', [12], function(err, result) {
+    c.invoke('echo', [12], function(err, result) {
       console.log("result is: "+result);
     });
 
@@ -28,7 +28,7 @@ Ruby client example:
     client = RedPack::Client.new("my_queue_name")
 
     puts "making the method call asynchronously"
-    client.increment_async(23) do |error, result|
+    client.echo_async(23) do |error, result|
       puts "async result:"
       p result
     end
@@ -38,7 +38,7 @@ Ruby server example:
 --------------------
 
     class ExampleService
-      def increment(amount)
+      def echo(amount)
         puts "called add_amount"
         return "from ruby: #{amount + 2}"
       end
@@ -51,7 +51,7 @@ Ruby server example:
 Java server example:
 --------------------
 
-    MsgpackRPCServer server = new MsgpackRPCServer("test");
+    MsgpackRPCServer server = new MsgpackRPCServer("my_queue_name");
     server.registerService("echo", new EchoService());
     server.start();
 
