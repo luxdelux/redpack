@@ -1,0 +1,14 @@
+Redpack for Ruby/Node/Java is developed by Lux Delux Inc by modifying 
+MessagePack-RPC for the purposes of running on top of Redis queues.  
+Currently there are modifications that are not completely backwards 
+compatible with the original MsgPack-RPC spec so we are making this a 
+separate project under the same license.
+
+MessagePack-RPC for Ruby is developed by FURUHASHI Sadayuki, licensed under
+Apache License, Version 2.0. The original software and related information
+is available at http://msgpack.sourceforge.net/.
+
+MessagePack is developed by FURUHASHI Sadayuki, licensed under Apache License,
+Version 2.0. The original software and related information is available at
+http://msgpack.sourceforge.net/.
+
