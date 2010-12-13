@@ -10,14 +10,12 @@ require '../lib/redpack/message'
 require '../lib/redpack/server'
 require '../lib/redpack/transport'
 
-class Blah
-  def increment(amount)
-    puts "called add_amount, sleeping 2 second"
-    sleep(2)
-    "from ruby: #{amount + 2}"
+class MyEchoService
+  def echo(param)
+    puts "called echo"
+    "<from ruby: \"#{param}\">"
   end
 end
 
-server = RedPack::Server.new("blah")
-server.listen(Blah.new)
+RedPack::Server.new("queue_name").listen(MyEchoService.new)
 

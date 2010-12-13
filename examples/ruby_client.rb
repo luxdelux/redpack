@@ -10,17 +10,6 @@ require '../lib/redpack/message'
 require '../lib/redpack/server'
 require '../lib/redpack/transport'
 
-client = RedPack::Client.new("blah")
-
-puts "making the method call asynchronously"
-client.increment_async(23) do |error, result|
-  puts "async result:"
-  p result
-end
-
-puts "making the method call synchronously"
-result = client.increment_sync(44)
-puts "sync result:"
-p result
-Kernel.exit
-
+client = RedPack::Client.new("queue_name")
+result = client.echo_sync("something")
+puts "result: #{result}"
