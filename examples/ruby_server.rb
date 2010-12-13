@@ -20,3 +20,4 @@ end
 
 server = RedPack::Server.new("blah")
 server.listen(Blah.new)
+
