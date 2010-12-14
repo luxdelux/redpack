@@ -10,8 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.msgpack.MessagePack;
-
 import com.luxdelux.redpack.model.RPCRequest;
 import com.luxdelux.redpack.model.RPCResponse;
 import com.luxdelux.redpack.services.Service;
@@ -32,9 +30,6 @@ public class RPCServer {
   }
 
   public RPCServer(String redisHost, String name) {
-		MessagePack.register(RPCRequest.class);
-		MessagePack.register(RPCResponse.class);
-
     this.redisHost = redisHost;
     this.redisQueueName = REQ_QUEUE_PREFIX + name;
     this.executorService = Executors.newSingleThreadExecutor();

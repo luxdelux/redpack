@@ -1,193 +1,151 @@
 package com.luxdelux.redpack.model;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.msgpack.MessagePackable;
-import org.msgpack.MessageTypeException;
-import org.msgpack.MessageUnpackable;
-import org.msgpack.Packer;
-import org.msgpack.Unpacker;
-import org.msgpack.MessagePack;
+import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
+import org.bson.types.BasicBSONList;
 
+public class RPCRequest {
+	private static final int REQUEST_TYPE = 0;
 
-public class RPCRequest implements MessagePackable, MessageUnpackable {
+	private int type;
+	private int requestId;
+	private int verificationCode;
+	private String methodName;
+	private String responseQueue;
+	private Object[] parameters;
 
-	  private static final int REQUEST_TYPE = 0;
-	  private static final int VERIFICATION_CODE = 535;
-
-  private int type;
-  private int requestId;
-  private int verificationCode;
-  private String methodName;
-  private String responseQueue;
-  private Object[] parameters;
-
-  public RPCRequest() {
-  }
-
-  public RPCRequest(int requestId) {
-    this.requestId = requestId;
-  }
-
-  public int getType() {
-    return type;
-  }
-
-  public int getRequestId() {
-    return requestId;
-  }
-
-  public int getVerificationCode() {
-    return verificationCode;
-  }
-
-  public String getMethodName() {
-    return methodName;
-  }
-
-  public String getResponseQueue() {
-    return responseQueue;
-  }
-
-  public Object[] getParameters() {
-    return parameters;
-  }
-
-  public void setType(int type) {
-    this.type = type;
-  }
-
-  public void setRequestId(int requestId) {
-    this.requestId = requestId;
-  }
-
-  public void setVerificationCode(int verificationCode) {
-    this.verificationCode = verificationCode;
-  }
-
-  public void setMethodName(String methodName) {
-    this.methodName = methodName;
-  }
-
-  public void setResponseQueue(String responseQueue) {
-    this.responseQueue = responseQueue;
-  }
-
-  public void setParameters(Object[] parameters) {
-    this.parameters = parameters;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result
-        + ((methodName == null) ? 0 : methodName.hashCode());
-    result = prime * result + Arrays.hashCode(parameters);
-    result = prime * result + requestId;
-    result = prime * result
-        + ((responseQueue == null) ? 0 : responseQueue.hashCode());
-    result = prime * result + type;
-    result = prime * result + verificationCode;
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-
-    RPCRequest other = (RPCRequest) obj;
-    if (methodName == null) {
-      if (other.methodName != null) {
-        return false;
-      }
-    } else if (!methodName.equals(other.methodName)) {
-      return false;
-    }
-    if (!Arrays.equals(parameters, other.parameters)) {
-      return false;
-    }
-    if (requestId != other.requestId) {
-      return false;
-    }
-    if (responseQueue == null) {
-      if (other.responseQueue != null) {
-        return false;
-      }
-    } else if (!responseQueue.equals(other.responseQueue)) {
-      return false;
-    }
-    if (type != other.type) {
-      return false;
-    }
-    if (verificationCode != other.verificationCode) {
-      return false;
-    }
-    return true;
-  }
-  
-	public void messagePack(Packer packer) throws IOException {
-		ArrayList outList = new ArrayList();
-		ArrayList inList = new ArrayList();
-		inList.add(REQUEST_TYPE);
-		inList.add(this.getRequestId());
-		inList.add(this.getMethodName());
-		inList.add(Arrays.asList(this.getParameters()));
-		for(int i=0; i<parameters.length; i++) {
-			System.out.println("param: "+parameters[i]);
-		}
-		outList.add(inList);
-		outList.add(VERIFICATION_CODE);
-		outList.add(this.getResponseQueue());
-		// needed for redpack clients
-		packer.pack(outList);
+	public RPCRequest() {
 	}
 
-	public void messageUnpack(Unpacker unpacker) throws IOException,
-			MessageTypeException {
-		if (unpacker.tryUnpackNull()) {
-			return;
+	public RPCRequest(int requestId) {
+		this.requestId = requestId;
+	}
+
+	public RPCRequest(BSONObject obj) {
+		BasicBSONList list = (BasicBSONList) obj.get("data");
+		this.requestId = (Integer) list.get(1);
+		this.methodName = list.get(2).toString();
+		this.parameters = ((BasicBSONList) list.get(3)).toArray();
+		this.responseQueue = obj.get("return").toString();
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public int getRequestId() {
+		return requestId;
+	}
+
+	public int getVerificationCode() {
+		return verificationCode;
+	}
+
+	public String getMethodName() {
+		return methodName;
+	}
+
+	public String getResponseQueue() {
+		return responseQueue;
+	}
+
+	public Object[] getParameters() {
+		return parameters;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
+	public void setRequestId(int requestId) {
+		this.requestId = requestId;
+	}
+
+	public void setVerificationCode(int verificationCode) {
+		this.verificationCode = verificationCode;
+	}
+
+	public void setMethodName(String methodName) {
+		this.methodName = methodName;
+	}
+
+	public void setResponseQueue(String responseQueue) {
+		this.responseQueue = responseQueue;
+	}
+
+	public void setParameters(Object[] parameters) {
+		this.parameters = parameters;
+	}
+
+	public BSONObject getBSONObject() {
+		BSONObject obj = new BasicBSONObject();
+		BasicBSONList list = new BasicBSONList();
+		list.add(REQUEST_TYPE);
+		list.add(this.requestId);
+		list.add(this.methodName);
+		BasicBSONList paramList = new BasicBSONList();
+		paramList.addAll(Arrays.asList(parameters));
+		list.add(paramList);
+		obj.put("data", list);
+		return obj;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((methodName == null) ? 0 : methodName.hashCode());
+		result = prime * result + Arrays.hashCode(parameters);
+		result = prime * result + requestId;
+		result = prime * result
+				+ ((responseQueue == null) ? 0 : responseQueue.hashCode());
+		result = prime * result + type;
+		result = prime * result + verificationCode;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
 		}
-		int numElements = unpacker.unpackArray();
-		unpacker.unpackArray();
-		this.setType(unpacker.unpackInt());
-		this.setRequestId(unpacker.unpackInt());
-		this.setMethodName(unpacker.unpackString());
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
 
-		Object[] parameters = new Object[unpacker.unpackArray()];
-		for (int i = 0; i < parameters.length; i++) {
-			parameters[i] = unpacker.unpackObject();
-
-			if (parameters[i] instanceof byte[]) {
-				byte[] bytes = (byte[]) parameters[i];
-				parameters[i] = new String(bytes, Charset.forName("UTF-8"));
-			} else if (parameters[i] instanceof Byte
-					|| parameters[i] instanceof Short
-					|| parameters[i] instanceof Integer
-					|| parameters[i] instanceof Long) {
-				parameters[i] = new Long(((Number) parameters[i]).longValue());
-			} else {
-				// TODO Handle floating point numbers (java.lang.Float,
-				// java.lang.Double)
-				// TODO Handle lists (java.util.Arrays.ArrayList)
-				// TODO Handle maps (java.util.HashMap)
+		RPCRequest other = (RPCRequest) obj;
+		if (methodName == null) {
+			if (other.methodName != null) {
+				return false;
 			}
+		} else if (!methodName.equals(other.methodName)) {
+			return false;
 		}
-		this.setParameters(parameters);
-		this.setVerificationCode(unpacker.unpackInt());
-		if (numElements > 2) {
-			this.setResponseQueue(unpacker.unpackString());
+		if (!Arrays.equals(parameters, other.parameters)) {
+			return false;
 		}
+		if (requestId != other.requestId) {
+			return false;
+		}
+		if (responseQueue == null) {
+			if (other.responseQueue != null) {
+				return false;
+			}
+		} else if (!responseQueue.equals(other.responseQueue)) {
+			return false;
+		}
+		if (type != other.type) {
+			return false;
+		}
+		if (verificationCode != other.verificationCode) {
+			return false;
+		}
+		return true;
 	}
 }

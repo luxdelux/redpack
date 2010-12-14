@@ -4,14 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import org.msgpack.MessagePackObject;
 
 public class JavaServer {
   static class MyEchoService implements Service {
     @Override
     public Object execute(Object... params) throws ServiceException {
   	  System.out.println("in echo");
-  	  return "<from java: \"" + ((MessagePackObject) params[0]).asString() + "\">";
+  	  return "<from java: \"" + params[0].toString() + "\">";
     }
   }
   

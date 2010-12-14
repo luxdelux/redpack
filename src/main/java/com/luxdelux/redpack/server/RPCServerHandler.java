@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.msgpack.MessageTypeException;
-
 import com.luxdelux.redpack.MsgpackClient;
 import com.luxdelux.redpack.PackException;
 import com.luxdelux.redpack.RedisClient;
@@ -61,10 +59,6 @@ public class RPCServerHandler implements Runnable {
 				// TODO Handle better
 				e.printStackTrace();
 				// return;
-				continue;
-			} catch (MessageTypeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 				continue;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

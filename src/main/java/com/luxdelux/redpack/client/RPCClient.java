@@ -3,10 +3,6 @@ package com.luxdelux.redpack.client;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.msgpack.MessagePack;
-import org.msgpack.MessageTypeException;
-import org.msgpack.Packer;
-
 import com.luxdelux.redpack.MsgpackClient;
 import com.luxdelux.redpack.PackException;
 import com.luxdelux.redpack.RedisClient;
@@ -31,9 +27,6 @@ public class RPCClient {
 	}
 	
 	public RPCClient(String redisHost, String name) {
-		MessagePack.register(RPCRequest.class);
-		MessagePack.register(RPCResponse.class);
-
 		this.redisQueueName = REQ_QUEUE_PREFIX + name;
 		this.redisClient = new RedisClient(redisHost);
 		this.msgpackClient = new MsgpackClient();
@@ -41,15 +34,12 @@ public class RPCClient {
 		this.redisResponseQueue = RES_QUEUE_PREFIX + redisClient.responseKeyName(RES_QUEUE_ID_KEY);
 	}
 
-	public Object invoke(String name, Object ... params) throws IOException, MessageTypeException, UnpackException, PackException {
+	public Object invoke(String name, Object ... params) throws IOException, UnpackException, PackException {
 		RPCRequest request = new RPCRequest(requestCounter++);
 		request.setMethodName(name);
 		request.setParameters(params);
 		request.setResponseQueue(this.redisResponseQueue);
-	    ByteArrayOutputStream out = new ByteArrayOutputStream();
-	    Packer packer = new Packer(out);
-		request.messagePack(packer);
-		redisClient.rpush(this.redisQueueName, out.toByteArray());
+		redisClient.rpush(this.redisQueueName, msgpackClient.packRequest(request));
 		byte[] returnVal = redisClient.blpop(this.redisResponseQueue);
 		
 		if (returnVal == null) {
