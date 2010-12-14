@@ -20,7 +20,7 @@
 module RedPack  #:nodoc:
 end
 
-require 'msgpack'
+require 'bson'
 require 'redis'
 require 'em-redis'
 require 'redpack/base'

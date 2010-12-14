@@ -1,14 +1,14 @@
-require 'msgpack'
+require 'bson'
 require 'redis'
 require 'em-redis'
-require '../lib/redpack/base'
-require '../lib/redpack/dispatcher'
-require '../lib/redpack/future'
-require '../lib/redpack/client'
-require '../lib/redpack/exception'
-require '../lib/redpack/message'
-require '../lib/redpack/server'
-require '../lib/redpack/transport'
+require '../rblib/redpack/base'
+require '../rblib/redpack/dispatcher'
+require '../rblib/redpack/future'
+require '../rblib/redpack/client'
+require '../rblib/redpack/exception'
+require '../rblib/redpack/message'
+require '../rblib/redpack/server'
+require '../rblib/redpack/transport'
 
 client = RedPack::Client.new("queue_name")
 result = client.echo_sync("something")

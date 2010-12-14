@@ -61,9 +61,10 @@ class RedisClientTransport
     # puts "done waiting for #{@return_queue_name}"
     if data && data[1]
       begin
-        redis_packet = MessagePack.unpack(data[1])
-        if redis_packet[1] == REDIS_DATA
-          msg = redis_packet[0]
+#        redis_packet = MessagePack.unpack(data[1])
+        redis_packet = BSON.deserialize(data[1])
+        msg = redis_packet["data"]
+        if msg
           if msg[0] == RESPONSE
             on_response(msg[1], msg[2], msg[3])
           else
@@ -109,9 +110,9 @@ class RedisClientTransport
 
 	def send_data(data, msgid = nil)
 	  if @ignore_return_value
-	    redis_push([data, REDIS_DATA].to_msgpack, msgid)
+	    redis_push(BSON.serialize({:data => data}), msgid)
     else
-	    redis_push([data, REDIS_DATA, @return_queue_name].to_msgpack, msgid)
+	    redis_push(BSON.serialize({:data => data, :return => @return_queue_name}), msgid)
     end
 	end
 
@@ -152,11 +153,11 @@ class RedisServerTransport
         data = @redis.blpop(@queue_name, 0)
         # puts "popped item off of #{@queue_name}"
     		if data && data[1]
-    		  redis_packet = MessagePack.unpack(data[1])
-    		  if redis_packet[1] == REDIS_DATA
-    		    @return_queue_name = redis_packet[2]
+    		  redis_packet = BSON.deserialize(data[1])
+    		  if redis_packet["data"]
+    		    @return_queue_name = redis_packet["return"]
     		    @unprocessed_requests_name = "#{@return_queue_name}:unprocessed"
-    		    msg = redis_packet[0]
+    		    msg = redis_packet["data"]
       		  case msg[0]
         		when REQUEST
         			@server.on_request(self, msg[1], msg[2], msg[3])
@@ -184,7 +185,7 @@ class RedisServerTransport
 
 	def send_data(data)
 	  # puts "putting data on #{@return_queue_name}"
-    @redis.rpush(@return_queue_name, [data, REDIS_DATA].to_msgpack) if @return_queue_name
+    @redis.rpush(@return_queue_name, BSON.serialize({:data => data})) if @return_queue_name
   end
 
 	# ServerTransport interface

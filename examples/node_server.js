@@ -1,4 +1,4 @@
-rpc = require('../lib/index');
+rpc = require('../jslib/index');
 
 var MyEchoService = {
   echo: function(param) {

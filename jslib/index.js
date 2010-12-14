@@ -1,6 +1,6 @@
 require.paths.unshift(__dirname);
 
-var msgpack = require('msgpack');
+var BSON = require('mongodb').BSON;
 var redis = require('redis');
 var fs = require('fs');
 var path = require('path');
@@ -20,26 +20,32 @@ function Client(reqQueue, host, port) {
   this.port = port;
 }
 
+function pack(input) {
+  var data = BSON.serialize(input);
+  return data;
+}
+
+function unpack(input) {
+  var data = BSON.deserialize(input);
+  return data;
+}
+
 Client.prototype.invoke = function(method, params, callback, timeout) {
   var self = this;
-  var redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
+  var redisClient = redis.createClient(self.port, self.host);
   
   var id = self.count++;
   var data = [REQUEST_TYPE, id, method, params];
-//  var binaryStr = toByteArray(msgpack.pack(data));
 
-  var req = [data, REDIS_DATA];
+  var req = {"data": data};
 
   if (callback !== undefined) {
     redisClient.incr(RES_QUEUE_ID_KEY, function(err, result) {
       self.resQueue = RES_QUEUE_PREFIX + result;
       self.reqSetName = self.resQueue + ':unprocessed';
-      req.push(self.resQueue);
-      // console.log('client pushing to ' + self.reqQueue);
-      // console.log('client waiting on ' + self.resQueue);
-      
+      req["return"] = self.resQueue;
       var multi = redisClient.multi();
-      var msgpackData = msgpack.pack(req);
+      var msgpackData = pack(req);
       multi.hset(self.reqSetName, id.toString(), msgpackData);
       multi.rpush(self.reqQueue, msgpackData);
       multi.exec(function() {
@@ -47,9 +53,7 @@ Client.prototype.invoke = function(method, params, callback, timeout) {
       });
     });
   } else {
-    // console.log('client pushing to ' + self.reqQueue);
-    // console.log('client waiting on ' + self.resQueue);    
-    var msgpackData = msgpack.pack(req);
+    var msgpackData = pack(req);
     var multi = redisClient.multi();
     multi.hset(self.reqSetName, id.toString(), msgpackData);
     multi.rpush(self.reqQueue, msgpackData);
@@ -70,10 +74,10 @@ Client.prototype._waitForReturn = function(redisClient, resQueue, callback, time
       return;
     }
 
-    var resMsg = msgpack.unpack(result[1]);
+    var resMsg = unpack(result[1]);
 
-    if (resMsg && resMsg[1] == REDIS_DATA) {
-      var res = resMsg[0];
+    if (resMsg && resMsg.data) {
+      var res = resMsg.data;
       var error = res[2];
       var ret = res[3];
       callback(error, ret);
@@ -117,7 +121,7 @@ Server.defaultMonitorHook = function(server) {
 };
 
 Server.prototype.setRedisTimeout = function(sec) {
-  var tmpClient = redis.createClient(this.port, this.host, {return_buffers: true});
+  var tmpClient = redis.createClient(this.port, this.host);
   tmpClient.sendCommand('CONFIG', 'set', 'timeout', sec, function(err, value) {
     if (err) {
       console.log(err);
@@ -132,7 +136,7 @@ Server.prototype.start = function(monitorHook) {
   
   // make sure close a previous connection
   self.close();
-  self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
+  self.redisClient = redis.createClient(self.port, self.host);
   _dequeue(self);
 };
  
@@ -165,30 +169,26 @@ function _dequeue(server) {
     }
     
     var whole = result[1];
-    var wholeMsg = msgpack.unpack(whole);
-    var dataMsg = wholeMsg[0];
+    var wholeMsg = unpack(whole);
+    var dataMsg = wholeMsg.data;
     var reqId = dataMsg[1];
     var method = dataMsg[2];
     var params = dataMsg[3];       
 
-    //console.log('executing: ' + wholeMsg + ' data=' + dataMsg);
-   
     var ret,res;
     try { 
-      //console.log('executing ' + method);
       ret = self.service[method].apply(this, params);
       res = [RESPONSE_TYPE, reqId, null, ret];
     } catch(e) {
       res = [RESPONSE_TYPE, reqId, e, null];
     }
 
-    if (wholeMsg.length == 3) {
+    if (wholeMsg.return) {
       // require return data
-      var resQueue = wholeMsg[2];
+      var resQueue = wholeMsg.return;
       // var bytes = toByteArray(msgpack.pack(res));
       
-      var returnData = msgpack.pack([res, REDIS_DATA]);
-      // console.log('putting return data on ' + resQueue + ' data=' + returnData);
+      var returnData = pack({"data": res});
       self.redisClient.hdel(resQueue + ':unprocessed', reqId.toString());
       self.redisClient.rpush(resQueue, returnData, function() {
         if (self.killWhenReady) {
