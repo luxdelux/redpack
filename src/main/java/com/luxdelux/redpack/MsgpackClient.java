@@ -28,6 +28,14 @@ public class MsgpackClient {
 	    return out.toByteArray();
   }
 
+  public RPCResponse unpackResponse(byte[] packed) throws UnpackException, MessageTypeException, IOException {
+	    RPCResponse response = new RPCResponse();
+	    unpacker.reset();
+	    unpacker.feed(packed);
+	    response.messageUnpack(unpacker);
+	    return response;
+	  }
+
   public RPCRequest unpackRequest(byte[] packed) throws UnpackException, MessageTypeException, IOException {
     RPCRequest request = new RPCRequest();
     unpacker.reset();

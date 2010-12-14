@@ -2,6 +2,7 @@ package com.luxdelux.redpack.model;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.msgpack.MessagePackable;
@@ -136,12 +137,23 @@ public class RPCRequest implements MessagePackable, MessageUnpackable {
     return true;
   }
   
-	@Override
 	public void messagePack(Packer packer) throws IOException {
+		ArrayList outList = new ArrayList();
+		ArrayList inList = new ArrayList();
+		inList.add(REQUEST_TYPE);
+		inList.add(this.getRequestId());
+		inList.add(this.getMethodName());
+		inList.add(Arrays.asList(this.getParameters()));
+		for(int i=0; i<parameters.length; i++) {
+			System.out.println("param: "+parameters[i]);
+		}
+		outList.add(inList);
+		outList.add(VERIFICATION_CODE);
+		outList.add(this.getResponseQueue());
 		// needed for redpack clients
+		packer.pack(outList);
 	}
 
-	@Override
 	public void messageUnpack(Unpacker unpacker) throws IOException,
 			MessageTypeException {
 		if (unpacker.tryUnpackNull()) {

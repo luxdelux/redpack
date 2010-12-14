@@ -16,29 +16,29 @@ import com.luxdelux.redpack.model.RPCRequest;
 import com.luxdelux.redpack.model.RPCResponse;
 import com.luxdelux.redpack.services.Service;
 
-public class MsgpackRPCServer {
+public class RPCServer {
 
   public static final String REQ_QUEUE_PREFIX = "redpack_request_queue:";
-  public static final String RES_QUEUE_PREFIX = "redpack_response_queue_";
+  public static final String RES_QUEUE_PREFIX = "redpack_response_queue:";
   public static final String RES_QUEUE_ID_KEY = "redpack_response_queue_index";
 
   private String redisHost;
   private String redisQueueName;
   private ExecutorService executorService;
-  private MsgpackRPCServerHandler handler;
+  private RPCServerHandler handler;
 
-  public MsgpackRPCServer(String name) {
+  public RPCServer(String name) {
     this("localhost", name);
   }
 
-  public MsgpackRPCServer(String redisHost, String name) {
+  public RPCServer(String redisHost, String name) {
 		MessagePack.register(RPCRequest.class);
 		MessagePack.register(RPCResponse.class);
 
     this.redisHost = redisHost;
     this.redisQueueName = REQ_QUEUE_PREFIX + name;
     this.executorService = Executors.newSingleThreadExecutor();
-    this.handler = new MsgpackRPCServerHandler(redisHost, redisQueueName);
+    this.handler = new RPCServerHandler(redisHost, redisQueueName);
   }
 
   public void start() {
@@ -111,7 +111,7 @@ public class MsgpackRPCServer {
   }
 
   public static void main(String[] args) {
-    final MsgpackRPCServer server = new MsgpackRPCServer(args[1]);
+    final RPCServer server = new RPCServer(args[1]);
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       public void run() { server.stop(); }

@@ -1,6 +1,7 @@
 package com.luxdelux.redpack.model;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -41,7 +42,6 @@ public class RPCResponse implements MessagePackable, MessageUnpackable {
 		return error;
 	}
 
-	@Override
 	public void messagePack(Packer packer) throws IOException {
 		ArrayList outList = new ArrayList();
 		ArrayList inList = new ArrayList();
@@ -59,9 +59,17 @@ public class RPCResponse implements MessagePackable, MessageUnpackable {
 		}
 	}
 
-	@Override
 	public void messageUnpack(Unpacker unpacker) throws IOException,
 			MessageTypeException {
-		// needed for redpack clients
+		if (unpacker.tryUnpackNull()) {
+			return;
+		}
+		int numElements = unpacker.unpackArray();
+		unpacker.unpackArray();
+		if (unpacker.unpackInt() == RESPONSE_TYPE) {
+			this.requestId = unpacker.unpackInt();
+			this.error = unpacker.unpackString();
+			this.result = unpacker.unpackObject();
+		}
 	}
 }

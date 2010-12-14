@@ -16,7 +16,7 @@ public class JavaServer {
   }
   
   public static void main(String[] args) throws Exception {
-    MsgpackRPCServer server = new MsgpackRPCServer("queue_name");
+    RPCServer server = new RPCServer("queue_name");
     server.registerService("echo", new MyEchoService());
     server.start();
   }

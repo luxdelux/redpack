@@ -42,6 +42,10 @@ public class RedisClient {
       throw new RedisException("Failed to disconnect from redis-server");
     }
   }
+  
+  public String responseKeyName(String name) {
+	  return client.incr(name).toString();
+  }
 
   public long rpush(String queue, byte[] bytes) {
     return client.rpush(queue.getBytes(), bytes);

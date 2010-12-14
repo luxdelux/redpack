@@ -15,7 +15,7 @@ import com.luxdelux.redpack.model.RPCResponse;
 import com.luxdelux.redpack.services.Service;
 import com.luxdelux.redpack.services.ServiceException;
 
-public class MsgpackRPCServerHandler implements Runnable {
+public class RPCServerHandler implements Runnable {
 
   private boolean killed;
   private String redisQueue;
@@ -23,11 +23,11 @@ public class MsgpackRPCServerHandler implements Runnable {
   private MsgpackClient msgpackClient;
   private Map<String, Service> services;
 
-  public MsgpackRPCServerHandler(String redisHost, String redisQueue) {
+  public RPCServerHandler(String redisHost, String redisQueue) {
     this(redisHost, redisQueue, null);
   }
 
-  public MsgpackRPCServerHandler(String redisHost, String redisQueue, Map<String, Service> services) {
+  public RPCServerHandler(String redisHost, String redisQueue, Map<String, Service> services) {
     this.killed = false;
     this.redisQueue = redisQueue;
     this.redisClient = new RedisClient(redisHost);
@@ -46,7 +46,6 @@ public class MsgpackRPCServerHandler implements Runnable {
     });
   }
 
-  @Override
   public void run() {
     do {
       byte[] top = redisClient.blpop(redisQueue); 
@@ -133,7 +132,6 @@ public class MsgpackRPCServerHandler implements Runnable {
 
 final class HelloService implements Service {
 
-  @Override
   public Object execute(Object... params) throws ServiceException {
     if (params.length != 1) {
       throw new ServiceException("HelloService expects 1 parameter");
@@ -147,7 +145,6 @@ final class HelloService implements Service {
 
 final class AddService implements Service {
 
-  @Override
   public Object execute(Object... params) throws ServiceException {
     if (params.length != 2) {
       throw new ServiceException("AddService expects 2 parameters");
