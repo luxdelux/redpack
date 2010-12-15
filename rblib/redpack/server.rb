@@ -20,8 +20,9 @@ module RedPack
 
 # Server is usable for RPC server.
 class Server
-  def initialize(name, redis_options = {:host => 'localhost'})
+  def initialize(name, obj, redis_options = {:host => 'localhost'})
     @dispatcher = nil
+    @obj = obj
     @listener = RedisServerTransport.new(name, redis_options)
   end
   
@@ -32,9 +33,9 @@ class Server
 
 	# 1. listen(listener, obj = nil, accept = obj.public_methods)
 	# 2. listen(host, port, obj = nil, accept = obj.public_methods)
-	def listen(obj)
-		unless obj.nil?
-			serve(obj, obj.public_methods)
+	def start()
+		unless @obj.nil?
+			serve(@obj, @obj.public_methods)
 		end
 
 		@listener.listen(self)

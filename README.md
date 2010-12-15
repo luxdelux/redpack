@@ -36,8 +36,8 @@ Ruby examples:
       end
     end
 
-    server = RedPack::Server.new("my_queue_name")
-    server.listen(ExampleService.new)
+    server = RedPack::Server.new("my_queue_name", ExampleService.new)
+    server.start()
 
 ### Client:
 
@@ -62,12 +62,12 @@ Java examples:
       }
     }
 
-    RPCServer server = new RPCServer("queue_name");
+    RPCServer server = new RPCServer("my_queue_name");
     server.registerService("echo", new EchoService());
     server.start();
 
 ### Client:
 
-    RPCClient client = new RPCClient("queue_name");
+    RPCClient client = new RPCClient("my_queue_name");
     Object result = client.invoke("echo", "something from java");
     System.out.println("result : "+result.toString());

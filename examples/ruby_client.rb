@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'bson'
 require 'redis'
 require 'em-redis'

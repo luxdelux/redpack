@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'bson'
 require 'redis'
 require 'em-redis'
@@ -17,5 +19,5 @@ class MyEchoService
   end
 end
 
-RedPack::Server.new("queue_name").listen(MyEchoService.new)
+RedPack::Server.new("queue_name", MyEchoService.new).start()
 
