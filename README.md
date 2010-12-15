@@ -62,7 +62,7 @@ Java examples:
       }
     }
 
-    MsgpackRPCServer server = new MsgpackRPCServer("my_queue_name");
+    RPCServer server = new RPCServer("queue_name");
     server.registerService("echo", new EchoService());
     server.start();
 
@@ -70,4 +70,4 @@ Java examples:
 
     RPCClient client = new RPCClient("queue_name");
     Object result = client.invoke("echo", "something from java");
-    System.out.println("result : "+String.valueOf(result));
+    System.out.println("result : "+result.toString());
