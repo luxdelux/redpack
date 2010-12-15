@@ -2,7 +2,7 @@ rpc = require('../jslib/index');
 
 var MyEchoService = {
   echo: function(param) {
-    console.log("called echo, appending param");
+    console.log("called echo, appending param: "+param);
     return "<from node: \""+param+"\">"
   }
 };

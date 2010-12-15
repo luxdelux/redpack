@@ -10,18 +10,20 @@ public class RPCResponse {
 	private int requestId;
 	private Object result;
 	private String error;
-	
+
 	public RPCResponse(RPCRequest request, Object result, String error) {
 		this.error = error;
 		this.result = result;
 		this.requestId = request.getRequestId();
 	}
-	
+
 	public RPCResponse(BSONObject obj) {
-		  BasicBSONList list = (BasicBSONList) obj.get("data");
-		  this.requestId = (Integer) list.get(1);
-		  this.result = list.get(2);
-		  this.error = list.get(3).toString();
+		BasicBSONList list = (BasicBSONList) obj.get("data");
+		this.requestId = (Integer) list.get(1);
+		if (list.get(2) != null) {
+			this.error = list.get(2).toString();
+		}
+		this.result = list.get(3);
 	}
 
 	public int getRequestId() {
@@ -35,13 +37,15 @@ public class RPCResponse {
 	public String getError() {
 		return error;
 	}
-	
-	  public BSONObject getBSONObject() {
-		  BSONObject obj = new BasicBSONObject();
-		  BasicBSONList list = new BasicBSONList();
-		  list.add(RESPONSE_TYPE);
-		  list.add(this.error);
-		  list.add(this.result);
-		  return obj;
-	  }
+
+	public BSONObject getBSONObject() {
+		BSONObject obj = new BasicBSONObject();
+		BasicBSONList list = new BasicBSONList();
+		list.add(RESPONSE_TYPE);
+		list.add(this.requestId);
+		list.add(this.error);
+		list.add(this.result);
+		obj.put("data", list);
+		return obj;
+	}
 }

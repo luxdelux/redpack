@@ -1,13 +1,9 @@
-package com.luxdelux.redpack.server;
+package com.luxdelux.redpack;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.luxdelux.redpack.MsgpackClient;
-import com.luxdelux.redpack.PackException;
-import com.luxdelux.redpack.RedisClient;
-import com.luxdelux.redpack.UnpackException;
 import com.luxdelux.redpack.model.RPCRequest;
 import com.luxdelux.redpack.model.RPCResponse;
 import com.luxdelux.redpack.services.Service;

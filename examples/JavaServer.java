@@ -1,15 +1,12 @@
-import com.luxdelux.redpack.server.*;
-import com.luxdelux.redpack.services.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import com.luxdelux.redpack.RPCServer;
+import com.luxdelux.redpack.services.Service;
+import com.luxdelux.redpack.services.ServiceException;
 
 public class JavaServer {
   static class MyEchoService implements Service {
     @Override
     public Object execute(Object... params) throws ServiceException {
-  	  System.out.println("in echo");
+  	  System.out.println("in echo, params: " + params[0].toString());
   	  return "<from java: \"" + params[0].toString() + "\">";
     }
   }

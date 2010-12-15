@@ -59,4 +59,14 @@ public class RedisClient {
 
     return null;
   }
+
+  public String blpop2(String queue) {
+	    List<String> reply = client.blpop(DEFAULT_BLPOP_TIMEOUT_S, queue);
+	    if (reply != null && reply.size() == 2) {
+	    	return reply.get(1);
+	    }
+
+	    return null;
+	  }
+
 }

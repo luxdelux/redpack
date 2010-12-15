@@ -1,12 +1,8 @@
-package com.luxdelux.redpack.client;
+package com.luxdelux.redpack;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import com.luxdelux.redpack.MsgpackClient;
-import com.luxdelux.redpack.PackException;
-import com.luxdelux.redpack.RedisClient;
-import com.luxdelux.redpack.UnpackException;
 import com.luxdelux.redpack.model.RPCRequest;
 import com.luxdelux.redpack.model.RPCResponse;
 
@@ -40,7 +36,7 @@ public class RPCClient {
 		request.setParameters(params);
 		request.setResponseQueue(this.redisResponseQueue);
 		redisClient.rpush(this.redisQueueName, msgpackClient.packRequest(request));
-		byte[] returnVal = redisClient.blpop(this.redisResponseQueue);
+		byte[] returnVal = redisClient.blpop(request.getResponseQueue());
 		
 		if (returnVal == null) {
 			return null;

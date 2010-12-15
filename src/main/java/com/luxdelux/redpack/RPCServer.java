@@ -1,4 +1,4 @@
-package com.luxdelux.redpack.server;
+package com.luxdelux.redpack;
 
 import java.io.BufferedWriter;
 import java.io.File;

@@ -180,8 +180,9 @@ function _dequeue(server) {
       ret = self.service[method].apply(this, params);
       res = [RESPONSE_TYPE, reqId, null, ret];
     } catch(e) {
-      res = [RESPONSE_TYPE, reqId, e, null];
+      res = [RESPONSE_TYPE, reqId, e.toString(), null];
     }
+    console.dir(wholeMsg);
 
     if (wholeMsg.return) {
       // require return data
@@ -190,6 +191,7 @@ function _dequeue(server) {
       
       var returnData = pack({"data": res});
       self.redisClient.hdel(resQueue + ':unprocessed', reqId.toString());
+      console.log('pushing data to: '+resQueue);
       self.redisClient.rpush(resQueue, returnData, function() {
         if (self.killWhenReady) {
           self.close();

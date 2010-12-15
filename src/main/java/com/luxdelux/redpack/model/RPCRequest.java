@@ -89,6 +89,7 @@ public class RPCRequest {
 		paramList.addAll(Arrays.asList(parameters));
 		list.add(paramList);
 		obj.put("data", list);
+		obj.put("return", this.responseQueue);
 		return obj;
 	}
 
