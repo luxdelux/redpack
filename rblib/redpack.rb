@@ -17,6 +17,8 @@
 #    limitations under the License.
 #
 
+$:.unshift(File.join(File.dirname(__FILE__), '..', 'rblib'))
+
 module RedPack  #:nodoc:
 end
 

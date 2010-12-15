@@ -7,6 +7,8 @@ Super simple RPC using a slightly modified form of MsgPack-RPC & BSON, on top of
 NodeJS examples
 ---------------
 
+    npm install redpack
+
 ### Server:
 
     s = new rpc.Server('my_queue_name', {
@@ -26,6 +28,8 @@ NodeJS examples
 
 Ruby examples:
 --------------
+
+    gem install redpack
 
 ### Server:
 

@@ -1,14 +1,13 @@
 {
   "name": "redpack",
-  "description": "Msgpack-rpc on top of redis queues",
+  "description": "Simple Scalable RPC using Redis & BSON",
   "version": "1.0.0",
   "author": "Austin Chau <austin@luxdelux.com>",
   "contributors": [ 
     { "name": "Dean Mao", "email": "dean@luxdelux.com" }
   ],
-  "dependencies": { "msgpack": ">= 0.5.0", "redis": ">= 0.3.7" },
-  "keywords": ["redis", "msgpack", "rpc", "thrift"],
+  "dependencies": { "redis": ">= 0.3.7", "mongodb": ">= 0.7.9" },
+  "keywords": ["redis", "msgpack", "rpc", "thrift", "bson"],
   "directories": { "lib": "./jslib" },
-  "engines": { "node": ">= 0.2.4" }
   "engines": { "node": ">= 0.2.4" }
 }
