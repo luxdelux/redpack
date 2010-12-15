@@ -4,18 +4,13 @@ import java.io.IOException;
 
 import org.bson.BSON;
 import org.bson.BSONObject;
-import org.msgpack.MessageTypeException;
-import org.msgpack.Unpacker;
 
 import com.luxdelux.redpack.model.RPCRequest;
 import com.luxdelux.redpack.model.RPCResponse;
 
 public class MsgpackClient {
 
-  private Unpacker unpacker;
-
   public MsgpackClient() {
-    unpacker = new Unpacker();
   }
   
   public byte[] packRequest(RPCRequest request) {
@@ -26,12 +21,12 @@ public class MsgpackClient {
 	  return BSON.encode(response.getBSONObject());
   }
 
-  public RPCResponse unpackResponse(byte[] packed) throws UnpackException, MessageTypeException, IOException {
+  public RPCResponse unpackResponse(byte[] packed) throws UnpackException, IOException {
 	  BSONObject obj = BSON.decode(packed);
 	  return new RPCResponse(obj);
 	  }
 
-  public RPCRequest unpackRequest(byte[] packed) throws UnpackException, MessageTypeException, IOException {
+  public RPCRequest unpackRequest(byte[] packed) throws UnpackException, IOException {
 	  BSONObject obj = BSON.decode(packed);
 	  return new RPCRequest(obj);
   }
