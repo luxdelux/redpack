@@ -41,9 +41,15 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-		  <groupId>org.msgpack</groupId>
-		  <artifactId>msgpack</artifactId>
-		  <version>0.5.0-devel</version>
+      <groupId>org.bson</groupId>
+      <artifactId>bson</artifactId>
+			<version>4.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+			<version>4.0.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -127,13 +133,6 @@
     <repository>
       <id>repository.jboss.org</id>
       <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>msgpack.org</id>
-      <url>http://msgpack.org/maven2/</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>

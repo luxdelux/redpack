@@ -1,10 +1,13 @@
-RedPack
-=============
+RedPack - Easily Scalable RPC
+=============================
 
-Super simple RPC using a slightly modified form of MsgPack-RPC, on top of Redis queues.  
+Super simple RPC using a slightly modified form of MsgPack-RPC & BSON, on top of Redis queues.  
 
-NodeJS server example:
-----------------------
+
+NodeJS examples
+---------------
+
+### Server:
 
     s = new rpc.Server('my_queue_name', {
       echo: function(amount) {
@@ -13,8 +16,7 @@ NodeJS server example:
     });
     s.start();
 
-NodeJS client example:
-----------------------
+### Client:
 
     c = new rpc.Client('my_queue_name');
     c.invoke('echo', [12], function(err, result) {
@@ -22,20 +24,10 @@ NodeJS client example:
     });
 
 
-Ruby client example:
---------------------
+Ruby examples:
+--------------
 
-    client = RedPack::Client.new("my_queue_name")
-
-    puts "making the method call asynchronously"
-    client.echo_async(23) do |error, result|
-      puts "async result:"
-      p result
-    end
-
-
-Ruby server example:
---------------------
+### Server:
 
     class ExampleService
       def echo(amount)
@@ -47,9 +39,21 @@ Ruby server example:
     server = RedPack::Server.new("my_queue_name")
     server.listen(ExampleService.new)
 
+### Client:
 
-Java server example:
---------------------
+    client = RedPack::Client.new("my_queue_name")
+
+    puts "making the method call asynchronously"
+    client.echo_async(23) do |error, result|
+      puts "async result:"
+      p result
+    end
+
+
+Java examples:
+--------------
+
+### Server:
 
     public class EchoService implements Service {
       public Object execute(Object... params) throws ServiceException {
@@ -62,8 +66,8 @@ Java server example:
     server.registerService("echo", new EchoService());
     server.start();
 
-Java client example:
---------------------
+### Client:
 
-    // Not yet ported yet!
-    
+    RPCClient client = new RPCClient("queue_name");
+    Object result = client.invoke("echo", "something from java");
+    System.out.println("result : "+String.valueOf(result));
