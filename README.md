@@ -1,7 +1,7 @@
 RedPack - Easily Scalable RPC
 =============================
 
-Super simple RPC using a slightly modified form of MsgPack-RPC & BSON, on top of Redis queues.  
+Super simple RPC using a slightly modified form of MsgPack-RPC & BSON, on top of Redis queues.  Currently supports NodeJS, Ruby, and Java.
 
 
 NodeJS examples
