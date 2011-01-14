@@ -54,10 +54,10 @@ Client.prototype.invoke = function(method, params, callback, timeout) {
 
   var req = {"data": data};
 
+  self.reqSetName = self.resQueue + ':unprocessed';
   if (callback !== undefined) {
     redisClient.incr(RES_QUEUE_ID_KEY, function(err, result) {
       self.resQueue = RES_QUEUE_PREFIX + result;
-      self.reqSetName = self.resQueue + ':unprocessed';
       req["return"] = self.resQueue;
       var multi = redisClient.multi();
       var msgpackData = pack(req);
