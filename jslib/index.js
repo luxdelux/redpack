@@ -29,12 +29,16 @@ function pack(input) {
 }
 
 function unpack(input) {
-  var x = '';
-  for(var i = 0; i<input.length; i++) {
-    x += String.fromCharCode(input[i]);
+  if (input && input.length) {
+    var x = '';
+    for(var i = 0; i<input.length; i++) {
+      x += String.fromCharCode(input[i]);
+    }
+    var data = BSON.deserialize(x);
+    return data;
+  } else {
+    return null;
   }
-  var data = BSON.deserialize(x);
-  return data;
 }
 
 Client.prototype.invoke = function(method, params, callback, timeout) {
