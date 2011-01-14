@@ -1,6 +1,7 @@
 require.paths.unshift(__dirname);
 
-var BSON = require('mongodb').BSON;
+var mongo = require('mongodb');
+var BSON = mongo.BSON;
 var redis = require('redis');
 var fs = require('fs');
 var path = require('path');
@@ -21,25 +22,20 @@ function Client(reqQueue, host, port) {
 
 function pack(input) {
   var data = BSON.serialize(input);
-  if (data) {
-    var x = [];
-    for(var i = 0; i<data.length; i++) {
-      x[i] = data.charCodeAt(i);
-    }
-    return new Buffer(x);
-  } else {
-    return data;
+  var array = [];
+  for(var i = 0; i < data.length; i++) {
+    array[i] = mongo.BinaryParser.toByte(data.charAt(i));
   }
+  return new Buffer(array);
 }
 
-function unpack(input) {
-  if (input && input.length) {
-    var x = '';
-    for(var i = 0; i<input.length; i++) {
-      x += String.fromCharCode(input[i]);
+function unpack(bytes) {
+  if (bytes && bytes.length > 0) {
+    var serialized_data = '';
+    for(var i = 0; i < bytes.length; i++) {
+      serialized_data += serialized_data + mongo.BinaryParser.fromByte(bytes[i]);
     }
-    var data = BSON.deserialize(x);
-    return data;
+    return BSON.deserialize(serialized_data);
   } else {
     return null;
   }
