@@ -21,11 +21,15 @@ function Client(reqQueue, host, port) {
 
 function pack(input) {
   var data = BSON.serialize(input);
-  var x = [];
-  for(var i = 0; i<data.length; i++) {
-    x[i] = data.charCodeAt(i);
+  if (data) {
+    var x = [];
+    for(var i = 0; i<data.length; i++) {
+      x[i] = data.charCodeAt(i);
+    }
+    return new Buffer(x);
+  } else {
+    return data;
   }
-  return new Buffer(x);
 }
 
 function unpack(input) {
