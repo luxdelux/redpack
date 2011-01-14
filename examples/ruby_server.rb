@@ -13,9 +13,9 @@ require '../rblib/redpack/server'
 require '../rblib/redpack/transport'
 
 class MyEchoService
-  def echo(param)
+  def echo(param1, param2)
     puts "called echo"
-    "<from ruby: \"#{param}\">"
+    "<from ruby: \"#{param1}\" - \"#{param2}\">"
   end
 end
 

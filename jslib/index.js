@@ -5,7 +5,6 @@ var redis = require('redis');
 var fs = require('fs');
 var path = require('path');
 
-const REDIS_DATA = 535; // flag to indicae the payload is for redis-msgpack rpc
 const REQUEST_TYPE = 0;
 const RESPONSE_TYPE = 1;
 const REQ_QUEUE_PREFIX = 'redpack_request_queue:';
@@ -22,17 +21,25 @@ function Client(reqQueue, host, port) {
 
 function pack(input) {
   var data = BSON.serialize(input);
-  return data;
+  var x = [];
+  for(var i = 0; i<data.length; i++) {
+    x[i] = data.charCodeAt(i);
+  }
+  return new Buffer(x);
 }
 
 function unpack(input) {
-  var data = BSON.deserialize(input);
+  var x = '';
+  for(var i = 0; i<input.length; i++) {
+    x += String.fromCharCode(input[i]);
+  }
+  var data = BSON.deserialize(x);
   return data;
 }
 
 Client.prototype.invoke = function(method, params, callback, timeout) {
   var self = this;
-  var redisClient = redis.createClient(self.port, self.host);
+  var redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
   
   var id = self.count++;
   var data = [REQUEST_TYPE, id, method, params];
@@ -121,7 +128,7 @@ Server.defaultMonitorHook = function(server) {
 };
 
 Server.prototype.setRedisTimeout = function(sec) {
-  var tmpClient = redis.createClient(this.port, this.host);
+  var tmpClient = redis.createClient(this.port, this.host, {return_buffers: true});
   tmpClient.sendCommand('CONFIG', 'set', 'timeout', sec, function(err, value) {
     if (err) {
       console.log(err);
@@ -136,7 +143,7 @@ Server.prototype.start = function(monitorHook) {
   
   // make sure close a previous connection
   self.close();
-  self.redisClient = redis.createClient(self.port, self.host);
+  self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
   _dequeue(self);
 };
  

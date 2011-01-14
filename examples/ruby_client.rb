@@ -13,5 +13,5 @@ require '../rblib/redpack/server'
 require '../rblib/redpack/transport'
 
 client = RedPack::Client.new("queue_name")
-result = client.echo_sync("something")
+result = client.echo_sync("something", 722)
 puts "result: #{result}"

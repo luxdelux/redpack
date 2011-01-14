@@ -1,4 +1,6 @@
-var rpc = require('redpack_rpc');
+require.paths.unshift(__dirname);
+
+var rpc = require('../jslib/index');
 var vows = require('vows');
 var assert = require('assert');
 var fs = require('fs');

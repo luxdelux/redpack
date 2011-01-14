@@ -6,8 +6,8 @@ public class JavaServer {
   static class MyEchoService implements Service {
     @Override
     public Object execute(Object... params) throws ServiceException {
-  	  System.out.println("in echo, params: " + params[0].toString());
-  	  return "<from java: \"" + params[0].toString() + "\">";
+  	  System.out.println("in echo, params: " + params[0].toString() + ", " + params[1].toString());
+  	  return "<from java: \"" + params[0].toString() + "\" - \"" + params[1].toString() + "\">";
     }
   }
   
