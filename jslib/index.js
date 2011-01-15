@@ -33,7 +33,7 @@ function unpack(bytes) {
   if (bytes && bytes.length > 0) {
     var serialized_data = '';
     for(var i = 0; i < bytes.length; i++) {
-      serialized_data += serialized_data + mongo.BinaryParser.fromByte(bytes[i]);
+      serialized_data += mongo.BinaryParser.fromByte(bytes[i]);
     }
     return BSON.deserialize(serialized_data);
   } else {
