@@ -56,7 +56,7 @@ class Client
     if sync || async
 	    method_name.gsub!(/_sync$/, '') if sync
 	    method_name.gsub!(/_async$/, '') if async
-	    future = send_request(method_name, args)
+	    future = send_request(method_name, args, !!sync)
   		future.attach_callback(block) if block
   		if sync
   		  @transport.listen_for_return_sync
@@ -124,12 +124,12 @@ class Client
 
 
 	private
-	def send_request(method, param)
+	def send_request(method, param, sync = false)
 		method = method.to_s
 		msgid = @seqid
 		@seqid += 1; if @seqid >= 1<<31 then @seqid = 0 end
 		data = [REQUEST, msgid, method, param]
-		@transport.send_data(data, msgid)
+		@transport.send_data(data, msgid, sync)
 		@reqtable[msgid] = Future.new(self)
 	end
 

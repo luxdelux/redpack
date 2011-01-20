@@ -108,11 +108,11 @@ class RedisClientTransport
     end
   end
 
-	def send_data(data, msgid = nil)
-	  if @ignore_return_value
+	def send_data(data, msgid = nil, sync = false)
+    if sync
+      redis_push(BSON.serialize({:data => data, :return => @return_queue_name}), msgid)
+	  elsif @ignore_return_value || !sync
 	    redis_push(BSON.serialize({:data => data}), msgid)
-    else
-	    redis_push(BSON.serialize({:data => data, :return => @return_queue_name}), msgid)
     end
 	end
 
