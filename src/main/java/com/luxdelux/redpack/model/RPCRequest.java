@@ -28,7 +28,9 @@ public class RPCRequest {
 		this.requestId = (Integer) list.get(1);
 		this.methodName = list.get(2).toString();
 		this.parameters = ((BasicBSONList) list.get(3)).toArray();
-		this.responseQueue = obj.get("return").toString();
+		if (obj.containsField("return")) {
+			this.responseQueue = obj.get("return").toString();
+		}
 	}
 
 	public int getType() {

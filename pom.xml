@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.luxdelux.redpack</groupId>
   <artifactId>redpack</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.0.1</version>
   <packaging>jar</packaging>
   <name>Redpack, asynchronous rpc based on msgpack-rpc</name>
   <description>
