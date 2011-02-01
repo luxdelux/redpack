@@ -37,9 +37,9 @@ class RedisClientTransport
   # Pass in {:ignore_return_value => true} as part of the redis_options so that the server doesn't put the return
   # object in a queue.  This is useful if you're doing call_async and never care about the return value.  It saves
   # Redis from adding a key/list pair.  A synchronous call will result in an immediate timeout exception.
-	def initialize(client, redis_options, name)
-		@client = client
-		@queue_name = "redpack_request_queue:#{name}"
+  def initialize(client, redis_options, name)
+    @client = client
+    @queue_name = "redpack_request_queue:#{name}"
     @ignore_return_value = !!redis_options.delete(:ignore_return_value)
     if @ignore_return_value
       @client.timeout = 0
@@ -50,12 +50,12 @@ class RedisClientTransport
     @redis_options = redis_options
     @redis = Redis.new(redis_options)
 
-		# assign a unique client key for this instance which will be used for return values
-		@identifier = @redis.incr("redpack_response_queue_index")
-		@return_queue_name = "redpack_response_queue:#{@identifier}"
-		@unprocessed_requests_name = "#{@return_queue_name}:unprocessed"
-		@pool = 0
-	end
+    # assign a unique client key for this instance which will be used for return values
+    @identifier = @redis.incr("redpack_response_queue_index")
+    @return_queue_name = "redpack_response_queue:#{@identifier}"
+    @unprocessed_requests_name = "#{@return_queue_name}:unprocessed"
+    @pool = 0
+  end
 
   def process_data(data)
     # puts "done waiting for #{@return_queue_name}"
@@ -77,26 +77,25 @@ class RedisClientTransport
     end
   end
 
-	def listen_for_return_sync
+  def listen_for_return_sync
     process_data(@redis.blpop(@return_queue_name, 0))
   end
 
-	def listen_for_return_async
-	  Thread.new do
+  def listen_for_return_async
+    Thread.new do
       unless @ignore_return_value
-		    EM.run do
-  		    redis = EventMachine::Protocols::Redis.connect(@redis_options)
-  		    # puts "waiting for #{@return_queue_name}"
-  		    redis.blpop(@return_queue_name, 0) do |data|
-  		      process_data(data)
-  	      end
-  	    end
-  	  end
+        EM.run do
+          redis = EventMachine::Protocols::Redis.connect(@redis_options)
+          redis.blpop(@return_queue_name, 0) do |data|
+            process_data(data)
+          end
+        end
+      end
     end
   end
 
-	def redis_push(msgpack_data, msgid = nil)
-	  if msgid
+  def redis_push(msgpack_data, msgid = nil)
+    if msgid
       @redis.multi
       # puts "setting key in #{@unprocessed_requests_name}"
       @redis.hset(@unprocessed_requests_name, msgid.to_s, msgpack_data)
@@ -108,89 +107,89 @@ class RedisClientTransport
     end
   end
 
-	def send_data(data, msgid = nil, sync = false)
-    if sync
+  def send_data(data, msgid = nil, sync = false)
+    if @ignore_return_value
+      redis_push(BSON.serialize({:data => data}), msgid)
+    else
       redis_push(BSON.serialize({:data => data, :return => @return_queue_name}), msgid)
-	  elsif @ignore_return_value || !sync
-	    redis_push(BSON.serialize({:data => data}), msgid)
     end
-	end
+  end
 
-	def close
-		self
-	end
+  def close
+    self
+  end
 
-	def on_connect(sock)
-	end
+  def on_connect(sock)
+  end
 
-	def on_response(msgid, error, result)
-		@client.on_response(self, msgid, error, result)
-	end
+  def on_response(msgid, error, result)
+    @client.on_response(self, msgid, error, result)
+  end
 
-	def on_connect_failed(sock)
-	end
+  def on_connect_failed(sock)
+  end
 
-	def on_close(sock)
-	end
+  def on_close(sock)
+  end
 end
 
 class RedisServerTransport
   include Util
-  
-	def initialize(name, redis_options = {})
-	  @ignore_nil_returns = !!redis_options.delete(:ignore_nil_returns)
-    @redis = Redis.new(redis_options)
-		@queue_name = "redpack_request_queue:#{name}"
-		@timeout_mechanism = redis_options[:timeout_mechanism]
-	end
 
-	# ServerTransport interface
-	def listen(server)
-		@server = server
+  def initialize(name, redis_options = {})
+    @ignore_nil_returns = !!redis_options.delete(:ignore_nil_returns)
+    @redis = Redis.new(redis_options)
+    @queue_name = "redpack_request_queue:#{name}"
+    @timeout_mechanism = redis_options[:timeout_mechanism]
+  end
+
+  # ServerTransport interface
+  def listen(server)
+    @server = server
     loop do
       begin
         # puts "listening to #{@queue_name}"
         data = @redis.blpop(@queue_name, 0)
         # puts "popped item off of #{@queue_name}"
-    		if data && data[1]
-    		  redis_packet = BSON.deserialize(data[1])
-    		  if redis_packet["data"]
-    		    @return_queue_name = redis_packet["return"]
-    		    @unprocessed_requests_name = "#{@return_queue_name}:unprocessed"
-    		    msg = redis_packet["data"]
-      		  case msg[0]
-        		when REQUEST
-        			@server.on_request(self, msg[1], msg[2], msg[3])
-        		when RESPONSE
-        		  puts "response message on server session"
-        		when NOTIFY
-        			@server.on_notify(msg[1], msg[2])
-        		else
-        			puts "unknown message type #{msg[0]}"
-        		end
-  		    end
-    		end
-    	rescue => e
-    	  # probably timed out
-    	  p e
-    	  @timeout_mechanism.call if @timeout_mechanism
-		  end
+        if data && data[1]
+          redis_packet = BSON.deserialize(data[1])
+          if redis_packet["data"]
+            @return_queue_name = redis_packet["return"]
+            @unprocessed_requests_name = "#{@return_queue_name}:unprocessed"
+            msg = redis_packet["data"]
+            case msg[0]
+            when REQUEST
+              @server.on_request(self, msg[1], msg[2], msg[3])
+            when RESPONSE
+              puts "response message on server session"
+            when NOTIFY
+              @server.on_notify(msg[1], msg[2])
+            else
+              puts "unknown message type #{msg[0]}"
+            end
+          end
+        end
+      rescue => e
+        # probably timed out
+        p e
+        @timeout_mechanism.call if @timeout_mechanism
+      end
     end
-	end
-	
-	def finish(msgid)
-	  # puts "removing key from #{@unprocessed_requests_name}"
-	  @redis.hdel(@unprocessed_requests_name, msgid.to_s)
   end
 
-	def send_data(data)
-	  # puts "putting data on #{@return_queue_name}"
+  def finish(msgid)
+    # puts "removing key from #{@unprocessed_requests_name}"
+    @redis.hdel(@unprocessed_requests_name, msgid.to_s)
+  end
+
+  def send_data(data)
+    # puts "putting data on #{@return_queue_name}"
     @redis.rpush(@return_queue_name, BSON.serialize({:data => data})) if @return_queue_name
   end
 
-	# ServerTransport interface
-	def close
-	end
+  # ServerTransport interface
+  def close
+  end
 end
 
 end
