@@ -9,5 +9,6 @@
   "dependencies": { "redis": ">= 0.3.7", "mongodb": ">= 0.7.9" },
   "keywords": ["redis", "msgpack", "rpc", "thrift", "bson"],
   "directories": { "lib": "./jslib" },
+  "main": "./jslib/index",
   "engines": { "node": ">= 0.2.4" }
 }
