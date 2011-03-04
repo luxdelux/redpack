@@ -6,7 +6,7 @@
   "contributors": [ 
     { "name": "Dean Mao", "email": "dean@luxdelux.com" }
   ],
-  "dependencies": { "redis": ">= 0.3.7", "mongodb": ">= 0.7.9" },
+  "dependencies": { "redis": ">= 0.3.7", "mongodb": "= 0.9.1" },
   "keywords": ["redis", "msgpack", "rpc", "thrift", "bson"],
   "directories": { "lib": "./jslib" },
   "main": "./jslib/index",
