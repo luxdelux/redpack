@@ -1,7 +1,7 @@
 {
   "name": "redpack",
   "description": "Simple Scalable RPC using Redis & BSON",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": "Austin Chau <austin@luxdelux.com>",
   "contributors": [ 
     { "name": "Dean Mao", "email": "dean@luxdelux.com" }
