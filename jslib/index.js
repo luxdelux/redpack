@@ -101,7 +101,7 @@ Client.prototype.close = function() {
   this.redisClient.end();
 };
 
-function Server(reqQueue, service, host, port) {
+function Server(reqQueue, host, port) {
   var self = this;
   
   self.pid = process.pid;
@@ -111,7 +111,7 @@ function Server(reqQueue, service, host, port) {
   fs.writeSync(fd, self.pid, 0);
   fs.closeSync(fd);
   
-  self.service = service;
+  self.service = {}; // init to empty hash
   self.reqQueue = REQ_QUEUE_PREFIX + reqQueue;
   self.host = host;
   self.port = port;
@@ -123,6 +123,10 @@ function Server(reqQueue, service, host, port) {
     self.killWhenReady = true;
   });
 }
+
+Server.prototype.setService = function(service) {
+  this.service = service;
+};
 
 // Static method for the default monitor hook
 Server.defaultMonitorHook = function(server) {
@@ -150,7 +154,29 @@ Server.prototype.start = function(monitorHook) {
   self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
   _dequeue(self);
 };
- 
+
+Server.prototype.getReturnQueue = function() {
+  return this.returnQueue;
+};
+
+Server.prototype.returnData = function(err, result) {
+  var self = this;
+  
+  var resQueue = self.getReturnQueue();
+  res = [RESPONSE_TYPE, self.reqId, err, result];
+  
+  self.redisClient.hdel(resQueue + ':unprocessed', self.reqId.toString());
+  self.redisClient.rpush(resQueue, pack({"data": res}), function() {
+    if (self.killWhenReady) {
+      self.close();
+    } else {
+      process.nextTick(function() {
+        _dequeue(self);
+      });
+    }
+  });  
+};
+
 function _dequeue(server) {
   var self = server;
   
@@ -184,33 +210,19 @@ function _dequeue(server) {
     var dataMsg = wholeMsg.data;
     var reqId = dataMsg[1];
     var method = dataMsg[2];
-    var params = dataMsg[3];       
-
+    var params = dataMsg[3];
+    
+    self.reqId = reqId;    
+    self.returnQueue = wholeMsg.return;
+    
     var ret,res;
-    try { 
-      ret = self.service[method].apply(this, params);
-      res = [RESPONSE_TYPE, reqId, null, ret];
+    try {
+      self.service[method].apply(self, params);
     } catch(e) {
-      res = [RESPONSE_TYPE, reqId, e.toString(), null];
+      this.returnData(e.toString(), null);
     }
 
-    if (wholeMsg.return) {
-      // require return data
-      var resQueue = wholeMsg.return;
-      // var bytes = toByteArray(msgpack.pack(res));
-      
-      var returnData = pack({"data": res});
-      self.redisClient.hdel(resQueue + ':unprocessed', reqId.toString());
-      self.redisClient.rpush(resQueue, returnData, function() {
-        if (self.killWhenReady) {
-          self.close();
-        } else {
-          process.nextTick(function() {
-            _dequeue(self);
-          });
-        }
-      });
-    } else {
+    if (!self.returnQueue) {
       if (self.killWhenReady) {
         self.close();
       } else {
@@ -220,16 +232,6 @@ function _dequeue(server) {
       }
     }
   });
-}
-
-function toByteArray(buffer) {
-  var bytes = [];
-  for (i in buffer) {
-    if (!isNaN(i)) {
-      bytes.push(buffer[i]);
-    }
-  }
-  return bytes;
 }
 
 Server.prototype.close = function() {

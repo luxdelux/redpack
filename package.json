@@ -1,14 +1,13 @@
 {
   "name": "redpack",
   "description": "Simple Scalable RPC using Redis & BSON",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "author": "Austin Chau <austin@luxdelux.com>",
   "contributors": [ 
     { "name": "Dean Mao", "email": "dean@luxdelux.com" }
   ],
-  "dependencies": { "redis": ">= 0.3.7", "mongodb": "= 0.9.1" },
+  "dependencies": { "redis": "= 0.5.6", "mongodb": "= 0.9.1" },
   "keywords": ["redis", "msgpack", "rpc", "thrift", "bson"],
-  "directories": { "lib": "./jslib" },
   "main": "./jslib/index",
-  "engines": { "node": ">= 0.2.0" }
+  "engines": { "node": ">= 0.4.0" }
 }
