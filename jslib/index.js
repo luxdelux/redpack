@@ -68,11 +68,11 @@ Client.prototype.invoke = function(method, params, callback, timeout) {
   } else {
     var msgpackData = pack(req);
     var multi = self.redisClient.multi();
-    multi.hset(self.reqSetName, id.toString(), msgpackData);
+    if (self.resQueue) {
+      multi.hset(self.reqSetName, id.toString(), msgpackData);
+    }
     multi.rpush(self.reqQueue, msgpackData);
-    multi.exec(function() {
-      self.redisClient.end();
-    });
+    multi.exec(function() {});
   }
 };
 
@@ -83,7 +83,6 @@ Client.prototype._waitForReturn = function(redisClient, resQueue, callback, time
   redisClient.blpop(resQueue, timeout, function(err, result) {
     if (err || !result) {
       callback(err, null);
-      redisClient.end();
       return;
     }
 
@@ -95,7 +94,6 @@ Client.prototype._waitForReturn = function(redisClient, resQueue, callback, time
       var ret = res[3];
       callback(error, ret);
     }
-    redisClient.end();
   });
 };
 
