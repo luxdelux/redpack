@@ -43,7 +43,9 @@ function unpack(bytes) {
 
 Client.prototype.invoke = function(method, params, callback, timeout) {
   var self = this;
-  var redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
+  if (!self.redisClient) {
+    self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
+  }
   
   var id = self.count++;
   var data = [REQUEST_TYPE, id, method, params];
@@ -52,24 +54,24 @@ Client.prototype.invoke = function(method, params, callback, timeout) {
 
   self.reqSetName = self.resQueue + ':unprocessed';
   if (callback !== undefined) {
-    redisClient.incr(RES_QUEUE_ID_KEY, function(err, result) {
+    self.redisClient.incr(RES_QUEUE_ID_KEY, function(err, result) {
       self.resQueue = RES_QUEUE_PREFIX + result;
       req["return"] = self.resQueue;
-      var multi = redisClient.multi();
+      var multi = self.redisClient.multi();
       var msgpackData = pack(req);
       multi.hset(self.reqSetName, id.toString(), msgpackData);
       multi.rpush(self.reqQueue, msgpackData);
       multi.exec(function() {
-        self._waitForReturn(redisClient, self.resQueue, callback, timeout);
+        self._waitForReturn(self.redisClient, self.resQueue, callback, timeout);
       });
     });
   } else {
     var msgpackData = pack(req);
-    var multi = redisClient.multi();
+    var multi = self.redisClient.multi();
     multi.hset(self.reqSetName, id.toString(), msgpackData);
     multi.rpush(self.reqQueue, msgpackData);
     multi.exec(function() {
-      redisClient.end();
+      self.redisClient.end();
     });
   }
 };
