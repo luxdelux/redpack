@@ -1,7 +1,7 @@
 require.paths.unshift(__dirname);
 
 var mongo = require('mongodb');
-var BSON = mongo.BSONPure.BSON;
+var BSON = require('./bson').BSON;
 var redis = require('redis');
 var fs = require('fs');
 var path = require('path');
@@ -246,5 +246,7 @@ Server.prototype.kill = function() {
   var child = exec('kill -15 ' + this.pid, function (error, stdout, stderr) {});
 };
 
+exports.pack = pack;
+exports.unpack = unpack;
 exports.Client = Client;
 exports.Server = Server;
