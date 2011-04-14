@@ -1,7 +1,7 @@
 require.paths.unshift(__dirname);
 
 var mongo = require('mongodb');
-var BSON = require('./bson').BSON;
+var BSON = require('redpack/lib/bson').BSON;
 var redis = require('redis');
 var fs = require('fs');
 var path = require('path');
