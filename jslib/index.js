@@ -239,7 +239,7 @@ Server.prototype.close = function() {
     this.redisClient.end();
   }
   
-  process.exit();
+  // process.exit();
 };
 
 // use for testing
