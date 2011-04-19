@@ -52,14 +52,12 @@ Client.prototype.invoke = function(method, params, callback, timeout) {
 
   var req = {"data": data};
 
-  self.reqSetName = self.resQueue + ':unprocessed';
   if (callback !== undefined) {
     self.redisClient.incr(RES_QUEUE_ID_KEY, function(err, result) {
       self.resQueue = RES_QUEUE_PREFIX + result;
       req["return"] = self.resQueue;
       var multi = self.redisClient.multi();
       var msgpackData = pack(req);
-      multi.hset(self.reqSetName, id.toString(), msgpackData);
       multi.rpush(self.reqQueue, msgpackData);
       multi.exec(function() {
         self._waitForReturn(self.redisClient, self.resQueue, callback, timeout);
@@ -68,9 +66,6 @@ Client.prototype.invoke = function(method, params, callback, timeout) {
   } else {
     var msgpackData = pack(req);
     var multi = self.redisClient.multi();
-    if (self.resQueue) {
-      multi.hset(self.reqSetName, id.toString(), msgpackData);
-    }
     multi.rpush(self.reqQueue, msgpackData);
     multi.exec(function() {});
   }
@@ -165,7 +160,6 @@ Server.prototype.returnData = function(err, result) {
   var resQueue = self.getReturnQueue();
   res = [RESPONSE_TYPE, self.reqId, err, result];
   
-  self.redisClient.hdel(resQueue + ':unprocessed', self.reqId.toString());
   self.redisClient.rpush(resQueue, pack({"data": res}), function() {
     if (self.killWhenReady) {
       self.close();

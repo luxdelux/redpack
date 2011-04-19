@@ -53,7 +53,6 @@ class RedisClientTransport
     # assign a unique client key for this instance which will be used for return values
     @identifier = @redis.incr("redpack_response_queue_index")
     @return_queue_name = "redpack_response_queue:#{@identifier}"
-    @unprocessed_requests_name = "#{@return_queue_name}:unprocessed"
     @pool = 0
   end
 
@@ -97,9 +96,6 @@ class RedisClientTransport
   def redis_push(msgpack_data, msgid = nil)
     if msgid
       @redis.multi
-      # puts "setting key in #{@unprocessed_requests_name}"
-      @redis.hset(@unprocessed_requests_name, msgid.to_s, msgpack_data)
-      # puts "pushing item into #{@queue_name}"
       @redis.rpush(@queue_name, msgpack_data)
       @redis.exec
     else
@@ -155,7 +151,6 @@ class RedisServerTransport
           redis_packet = BSON.deserialize(data[1])
           if redis_packet["data"]
             @return_queue_name = redis_packet["return"]
-            @unprocessed_requests_name = "#{@return_queue_name}:unprocessed"
             msg = redis_packet["data"]
             case msg[0]
             when REQUEST
@@ -178,8 +173,7 @@ class RedisServerTransport
   end
 
   def finish(msgid)
-    # puts "removing key from #{@unprocessed_requests_name}"
-    @redis.hdel(@unprocessed_requests_name, msgid.to_s)
+    # potentially do work on finish
   end
 
   def send_data(data)
