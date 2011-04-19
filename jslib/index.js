@@ -145,7 +145,7 @@ Server.prototype.start = function(monitorHook) {
   self.monitorHook = monitorHook || Server.defaultMonitorHook;
   
   // make sure close a previous connection
-  self.close();
+  // self.close();
   self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
   _dequeue(self);
 };
@@ -229,9 +229,8 @@ function _dequeue(server) {
 }
 
 Server.prototype.close = function() {
-  if (this.redisClient) {
-    this.redisClient.end();
-  }
+  this.redisClient.end();
+  process.exit();
 };
 
 // use for testing
