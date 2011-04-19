@@ -112,6 +112,8 @@ function Server(reqQueue, host, port) {
   self.port = port;
   self.killWhenReady = false;
   
+  self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
+  
   // Listen to SIGTERM signal event, which indicate the server needs to shutdown
   process.addListener('SIGTERM', function() {
     console.log('[SIGNAL] SIGTERM received, will kill server when ready.');
@@ -142,10 +144,7 @@ Server.prototype.setRedisTimeout = function(sec) {
 
 Server.prototype.start = function(monitorHook) {
   var self = this;
-  self.monitorHook = monitorHook || Server.defaultMonitorHook;
-  
-  // make sure close a previous connection
-  // self.close();
+  self.monitorHook = monitorHook || function() {console.log('hello');};
   self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
   _dequeue(self);
 };
@@ -191,7 +190,7 @@ function _dequeue(server) {
         } else {
           // both err and result is null, when BLPOP timeout.  Execute monitor hook.
           process.nextTick(function() {
-            self.start(self.monitorHook);   
+            _dequeue(self);
             self.monitorHook(self);
           });
         }
@@ -229,7 +228,8 @@ function _dequeue(server) {
 }
 
 Server.prototype.close = function() {
-  this.redisClient.end();
+  var self = this;
+  self.redisClient.end();
   process.exit();
 };
 
