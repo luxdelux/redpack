@@ -235,8 +235,8 @@ function _dequeue(server) {
 }
 
 Server.prototype.close = function() {
-    this.redisClient.end();
-  // process.exit();
+  this.redisClient.end();
+  process.exit();
 };
 
 // use for testing
