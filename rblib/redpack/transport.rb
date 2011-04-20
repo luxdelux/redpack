@@ -60,12 +60,11 @@ class RedisClientTransport
     # puts "done waiting for #{@return_queue_name}"
     if data && data[1]
       begin
-#        redis_packet = MessagePack.unpack(data[1])
         redis_packet = BSON.deserialize(data[1])
         msg = redis_packet["data"]
         if msg
           if msg[0] == RESPONSE
-            on_response(msg[1], msg[2], msg[3])
+            on_response(msg[1].to_i, msg[2], msg[3])
           else
             puts "unknown message type #{msg[0]}"
           end

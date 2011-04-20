@@ -13,8 +13,5 @@ require '../rblib/redpack/server'
 require '../rblib/redpack/transport'
 
 client = RedPack::Client.new("queue_name")
-client.echo_async("something", 722) do |err, result|
-  p "async called #{result}"
-end
-
-sleep(1)
+result = client.echo_sync("something", 722)
+p "sync called #{result}"
