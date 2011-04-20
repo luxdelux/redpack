@@ -144,7 +144,7 @@ Server.prototype.setRedisTimeout = function(sec) {
 
 Server.prototype.start = function(monitorHook) {
   var self = this;
-  self.monitorHook = monitorHook || function() {console.log('hello');};
+  self.monitorHook = monitorHook || function() {};
   self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
   _dequeue(self);
 };
