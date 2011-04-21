@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.name = "redpack"
-  s.version = "1.0.5"
+  s.version = "1.0.6"
   s.description = "Simple Scalable RPC using Redis & BSON"
   s.summary = "RedPack, asynchronous redis RPC library derived from MsgPack-RPC using BSON serialization"
   s.author = "Dean Mao"

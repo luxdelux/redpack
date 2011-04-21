@@ -212,7 +212,7 @@ function _dequeue(server) {
     try {
       self.service[method].apply(self, params);
     } catch(e) {
-      this.returnData(e.toString(), null);
+      self.returnData(e.toString(), null);
     }
 
     if (!self.returnQueue) {
