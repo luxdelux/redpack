@@ -96,7 +96,7 @@ Client.prototype.close = function() {
   this.redisClient.end();
 };
 
-function Server(reqQueue, host, port) {
+function Server(reqQueue, host, port, options) {
   var self = this;
   
   self.pid = process.pid;
@@ -111,7 +111,9 @@ function Server(reqQueue, host, port) {
   self.host = host;
   self.port = port;
   self.killWhenReady = false;
-  
+  self.maxWorkerCount = 0;
+  self.workerCount = 0;
+
   self.redisClient = redis.createClient(self.port, self.host, {return_buffers: true});
   
   // Listen to SIGTERM signal event, which indicate the server needs to shutdown
@@ -119,6 +121,12 @@ function Server(reqQueue, host, port) {
     console.log('[SIGNAL] SIGTERM received, will kill server when ready.');
     self.killWhenReady = true;
   });
+}
+
+Server.prototype.setMaxWorkerCount = function(num) {
+  if (this.workerCount < num) {
+    this.maxWorkerCount = num;
+  }
 }
 
 Server.prototype.setService = function(service) {
@@ -155,6 +163,7 @@ Server.prototype.getReturnQueue = function() {
 
 Server.prototype.returnData = function(err, result) {
   var self = this;
+  if (self.maxWorkerCount != 0) self.workerCount--;
   
   var resQueue = self.getReturnQueue();
   res = [RESPONSE_TYPE, self.reqId, err, result];
@@ -173,58 +182,61 @@ Server.prototype.returnData = function(err, result) {
 function _dequeue(server) {
   var self = server;
   
-  self.redisClient.blpop(self.reqQueue, BLPOP_TIMEOUT, function(err, result) {
-    if (err) {
-      console.log(err);
-    }
-    
-    if (err || !result) {
-      if (self.killWhenReady) {
-        console.log('server shutting down');
-        self.close();
-      } else {
-        if (err) {
-          // this is reached by err, needs to reconnect with start()
-          console.log(err + '.  Restarting server.');
-          self.start(self.monitorHook);
+  if (self.workerCount < self.maxWorkerCount || 0 == self.maxWorkerCount) {
+    self.redisClient.blpop(self.reqQueue, BLPOP_TIMEOUT, function(err, result) {
+      if (self.maxWorkerCount != 0) self.workerCount++;
+      if (err) {
+        console.log(err);
+      }
+      
+      if (err || !result) {
+        if (self.killWhenReady) {
+          console.log('server shutting down');
+          self.close();
         } else {
-          // both err and result is null, when BLPOP timeout.  Execute monitor hook.
+          if (err) {
+            // this is reached by err, needs to reconnect with start()
+            console.log(err + '.  Restarting server.');
+            self.start(self.monitorHook);
+          } else {
+            // both err and result is null, when BLPOP timeout.  Execute monitor hook.
+            process.nextTick(function() {
+              _dequeue(self);
+              self.monitorHook(self);
+            });
+          }
+        }
+        return;
+      }
+      
+      var whole = result[1];
+      var wholeMsg = unpack(whole);
+      var dataMsg = wholeMsg.data;
+      var reqId = dataMsg[1];
+      var method = dataMsg[2];
+      var params = dataMsg[3];
+      
+      self.reqId = reqId;    
+      self.returnQueue = wholeMsg.return;
+      
+      var ret,res;
+      try {
+        self.service[method].apply(self, params);
+      } catch(e) {
+        self.returnData(e.toString(), null);
+      }
+
+      if (!self.returnQueue) {
+        if (self.killWhenReady) {
+          self.close();
+        } else {
           process.nextTick(function() {
             _dequeue(self);
-            self.monitorHook(self);
-          });
+          });  
         }
       }
-      return;
-    }
-    
-    var whole = result[1];
-    var wholeMsg = unpack(whole);
-    var dataMsg = wholeMsg.data;
-    var reqId = dataMsg[1];
-    var method = dataMsg[2];
-    var params = dataMsg[3];
-    
-    self.reqId = reqId;    
-    self.returnQueue = wholeMsg.return;
-    
-    var ret,res;
-    try {
-      self.service[method].apply(self, params);
-    } catch(e) {
-      self.returnData(e.toString(), null);
-    }
-
-    if (!self.returnQueue) {
-      if (self.killWhenReady) {
-        self.close();
-      } else {
-        process.nextTick(function() {
-          _dequeue(self);
-        });  
-      }
-    }
-  });
+    });
+  }
 }
 
 Server.prototype.close = function() {
