@@ -50,12 +50,12 @@ Client.prototype.invoke = function(method, params, callback, timeout) {
   var id = self.count++;
   var data = [REQUEST_TYPE, id, method, params];
 
-  var req = {"data": data};
+  var req = {data: data};
 
-  if (callback !== undefined) {
+  if (typeof callback == 'function') {
     self.redisClient.incr(RES_QUEUE_ID_KEY, function(err, result) {
       self.resQueue = RES_QUEUE_PREFIX + result;
-      req["return"] = self.resQueue;
+      req['return'] = self.resQueue;
       var multi = self.redisClient.multi();
       var msgpackData = pack(req);
       multi.rpush(self.reqQueue, msgpackData);
@@ -157,15 +157,15 @@ Server.prototype.start = function(monitorHook) {
   _dequeue(self);
 };
 
-Server.prototype.getReturnQueue = function() {
-  return this.returnQueue;
-};
+// Server.prototype.getReturnQueue = function() {
+//   return this.returnQueue;
+// };
 
 Server.prototype.returnData = function(err, result) {
   var self = this;
   if (self.maxWorkerCount != 0) self.workerCount--;
   
-  var resQueue = self.getReturnQueue();
+  var resQueue = self.returnQueue;
   res = [RESPONSE_TYPE, self.reqId, err, result];
   
   self.redisClient.rpush(resQueue, pack({"data": res}), function() {
@@ -217,12 +217,13 @@ function _dequeue(server) {
       var params = dataMsg[3];
       
       self.reqId = reqId;    
-      self.returnQueue = wholeMsg.return;
+      self.returnQueue = wholeMsg['return'];
       
       var ret,res;
       try {
         self.service[method].apply(self, params);
       } catch(e) {
+        // only return error if the original invoker has passed in a callback with returnQueue
         self.returnData(e.toString(), null);
       }
 
@@ -241,7 +242,7 @@ function _dequeue(server) {
 
 Server.prototype.close = function() {
   var self = this;
-  self.redisClient.end();
+  self.redisClient.quit();
   process.exit();
 };
 
