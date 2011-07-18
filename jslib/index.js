@@ -20,25 +20,33 @@ function Client(reqQueue, host, port) {
   this.port = port;
 }
 
+// function pack(input) {
+//   var data = BSON.serialize(input);
+//   var array = [];
+//   for(var i = 0; i < data.length; i++) {
+//     array[i] = mongo.BinaryParser.toByte(data.charAt(i));
+//   }
+//   return new Buffer(array);
+// }
+
+// function unpack(bytes) {
+//   if (bytes && bytes.length > 0) {
+//     var serialized_data = '';
+//     for(var i = 0; i < bytes.length; i++) {
+//       serialized_data += mongo.BinaryParser.fromByte(bytes[i]);
+//     }
+//     return BSON.deserialize(serialized_data);
+//   } else {
+//     return null;
+//   }
+// }
+
 function pack(input) {
-  var data = BSON.serialize(input);
-  var array = [];
-  for(var i = 0; i < data.length; i++) {
-    array[i] = mongo.BinaryParser.toByte(data.charAt(i));
-  }
-  return new Buffer(array);
+  return BSON.serialize(input);
 }
 
 function unpack(bytes) {
-  if (bytes && bytes.length > 0) {
-    var serialized_data = '';
-    for(var i = 0; i < bytes.length; i++) {
-      serialized_data += mongo.BinaryParser.fromByte(bytes[i]);
-    }
-    return BSON.deserialize(serialized_data);
-  } else {
-    return null;
-  }
+  return BSON.deserialize(bytes)
 }
 
 Client.prototype.invoke = function(method, params, callback, timeout) {
